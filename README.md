@@ -14,6 +14,8 @@ Entry is in `src/index.ts`, which can also be found in `package.json`, specifica
 ## Tests
 Tests are located under `src/test`, and test files follow `*.test.ts`
 
+To run tests, run `npm run test`
+
 ## Configuration Files
 
 + `package.json` &rarr; node config
