@@ -1,0 +1,23 @@
+{
+    "app_id": "730",
+    "context_id": "2",
+    "item_id": "15176713049",
+    "asset_id": "15176713049",
+    "extra_info": {
+      "paintindex": 180,
+      "paintseed": 322,
+      "rarity": 6,
+      "quality": 4,
+      "paintwear": 1045326125,
+      "patternname": "Fire Serpent"
+    },
+    "wear_value": "0.20157308876514435",
+    "sticker_info": [
+      {
+        "name": "Firestarter (Holo)",
+        "url": "https:\/\/steamcdn-a.akamaihd.net\/apps\/730\/icons\/econ\/stickers\/community02\/firestarter_holo.43b0d384c94b9070fdc2d431ecbd6448d5ce69e2.png",
+        "wear_value": "0.0"
+      }
+    ],
+    "event_type": "extra_info"
+  }
