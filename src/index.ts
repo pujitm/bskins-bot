@@ -1,3 +1,4 @@
+require('dotenv').config() // Should be first line application; loads environment variables
 import * as BitSkins from "bitskins"
 import { InventoryChangesObject } from "inventory_changes";
 import { ConsoleColors } from "./console_colors"; // Needs a relative import; I'm not sure why.

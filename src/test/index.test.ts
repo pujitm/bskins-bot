@@ -1,5 +1,4 @@
-var dotenv = require('dotenv')
-dotenv.config()
+require('dotenv').config()
 
 import { hello } from '../hello-test';
 import { expect } from 'chai';
