@@ -20,4 +20,4 @@ To run tests, run `npm run test`
 
 + `package.json` &rarr; node config
 + `tsconfig.json` &rarr; typscript config
-+  `.env` &rarr; Environment variables containing Node variables, API keys, secrets, and other configurations (gitignore-ed)
++ `.env` &rarr; Environment variables containing Node variables, API keys, secrets, and other configurations (gitignore-ed)
