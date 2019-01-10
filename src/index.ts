@@ -1,22 +1,22 @@
-require('dotenv').config() // Should be first line application; loads environment variables
-import * as BitSkins from "bitskins"
+require("dotenv").config(); // Should be first line application; loads environment variables
+import * as BitSkins from "bitskins";
 import { InventoryChangesObject } from "inventory_changes";
 import { ConsoleColors } from "./console_colors"; // Needs a relative import; I'm not sure why.
 
 /**
  * See https://github.com/Rob--/bitskins#api for documentation
  */
-const api = new BitSkins.API(process.env.API_KEY, process.env.API_SECRET)
+const api = new BitSkins.API(process.env.API_KEY, process.env.API_SECRET);
 
 /**
  * See https://github.com/Rob--/bitskins#web-sockets for documentation
  */
-const socket = new BitSkins.WebSocket()
+const socket = new BitSkins.WebSocket();
 
 /**
  * See `ConsoleColors` import for documentation
  */
-const colors = new ConsoleColors()
+const colors = new ConsoleColors();
 
 socket.on('connected', () => {
     console.log('connected, yay!')

@@ -9,7 +9,13 @@ After `npm install` ...
 At the root of the directory: `touch .env`
 This file is ignored in `.gitignore`
 
-Run `npm run start` and see terminal output
+------------------------------------------------------------------
+
+In a separate terminal, run `start-mongod.sh`. 
+
+Then, run `npm run test` to make sure everything is configured correctly.
+
+Finally, run `npm run start` and see terminal output.
 
 ## Prerequisites
 
