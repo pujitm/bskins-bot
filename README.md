@@ -9,6 +9,8 @@ After `npm install` ...
 At the root of the directory: `touch .env`
 This file is ignored in `.gitignore`
 
+OR Get it from our shared cloud storage.
+
 ------------------------------------------------------------------
 
 In a separate terminal, run `start-mongod.sh`. 
