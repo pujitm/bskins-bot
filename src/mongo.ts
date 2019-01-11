@@ -1,3 +1,5 @@
+// Example of Mongo Usage
+
 const MongoClient = require("mongodb").MongoClient;
 const assert = require("assert");
 
@@ -7,6 +9,7 @@ const dbName = process.env.DB_NAME;
 
 MongoClient.connect(
   url,
+  connectionOptions,
   function(err, client) {
     assert.equal(null, err);
     console.log("Connected successfully to server");
