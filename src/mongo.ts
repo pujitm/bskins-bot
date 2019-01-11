@@ -1,3 +1,5 @@
+import { Db } from "mongodb";
+
 // Example of Mongo Usage
 
 const MongoClient = require("mongodb").MongoClient;
@@ -47,3 +49,11 @@ const findDocuments = function(db, callback) {
     callback(docs);
   });
 };
+
+function query(db: Db, callback) {
+    const collection = db.collection('test')
+    const query = {a:1}
+    // See https://mongodb.github.io/node-mongodb-native/markdown-docs/queries.html
+    // For Indexing (improved performance), see https://docs.mongodb.com/manual/indexes/
+    collection.find(query).toArray((err, docs) => {})
+}

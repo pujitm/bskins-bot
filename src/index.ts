@@ -111,6 +111,8 @@ MongoClient.connect(
   }
 );
 
+// ---- DB Hooks ----
+
 function dbOnListed(db: Db, item: InventoryChangesObject, callback) {
   const collection = db.collection("listed");
 
@@ -138,7 +140,7 @@ function dbOnDelisted(db: Db, item: InventoryChangesObject, callback) {
   collection.insert(doc, callback(doc));
 }
 
-function dbOnPriceChanged(db, item: InventoryChangesObject, callback) {
+function dbOnPriceChanged(db: Db, item: InventoryChangesObject, callback) {
   const collection = db.collection("price_changed");
 
   const delta = (item.old_price - item.price).toFixed(2);
@@ -155,7 +157,7 @@ function dbOnPriceChanged(db, item: InventoryChangesObject, callback) {
   collection.insert(doc, callback(doc));
 }
 
-function dbOnExtraInfo(db, item: InventoryChangesObject, callback) {
+function dbOnExtraInfo(db: Db, item: InventoryChangesObject, callback) {
   const collection = db.collection("extra_info");
 
   const doc = {
@@ -167,3 +169,5 @@ function dbOnExtraInfo(db, item: InventoryChangesObject, callback) {
 
   collection.insert(doc, callback(doc));
 }
+
+// ---- End DB Hooks ----
