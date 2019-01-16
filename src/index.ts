@@ -36,6 +36,8 @@ const channel = {
   disconnected: "disconnected"
 };
 
+const CSGO_APP_ID = 730
+
 // ---- End Configuration ----
 
 MongoClient.connect(
@@ -51,27 +53,31 @@ MongoClient.connect(
     });
 
     socket.on(channel.listed, (item: InventoryChangesObject) => {
-      dbOnListed(db, item, doc => {
-        console.log(colors.FgGreen, "Item Listed!", colors.Reset);
-        console.log(colors.Dim, JSON.stringify(doc), colors.Reset);
-        console.log(
-          colors.Bright,
-          `${item.market_hash_name}\n$ ${item.price}`,
-          colors.Reset
-        );
-      });
+      if (item.app_id == CSGO_APP_ID) {
+        dbOnListed(db, item, doc => {
+          console.log(colors.FgGreen, "Item Listed!", colors.Reset);
+          console.log(colors.Dim, JSON.stringify(doc), colors.Reset);
+          console.log(
+            colors.Bright,
+            `${item.market_hash_name}\n$ ${item.price}`,
+            colors.Reset
+          );
+        });
+      }
     });
 
     socket.on(channel.delisted, (item: InventoryChangesObject) => {
-      dbOnDelisted(db, item, doc => {
-        console.log(colors.FgRed, "Item Delisted or Sold!", colors.Reset);
-        console.log(colors.Dim, JSON.stringify(doc), colors.Reset);
-        console.log(
-          colors.Bright,
-          `${item.market_hash_name}\n$ ${item.price}`,
-          colors.Reset
-        );
-      });
+      if (item.app_id == CSGO_APP_ID) {
+        dbOnDelisted(db, item, doc => {
+          console.log(colors.FgRed, "Item Delisted or Sold!", colors.Reset);
+          console.log(colors.Dim, JSON.stringify(doc), colors.Reset);
+          console.log(
+            colors.Bright,
+            `${item.market_hash_name}\n$ ${item.price}`,
+            colors.Reset
+          );
+        });
+      }
 
       const id = item.item_id;
       const name = item.market_hash_name;
@@ -80,29 +86,33 @@ MongoClient.connect(
     });
 
     socket.on(channel.price_changed, (item: InventoryChangesObject) => {
-      dbOnPriceChanged(db, item, doc => {
-        console.log(colors.FgYellow, "Price Changed!", colors.Reset);
-        console.log(colors.Dim, JSON.stringify(doc), colors.Reset);
-        console.log(
-          colors.Bright,
-          `${item.market_hash_name}\nPrice Change: ${doc.delta}`,
-          colors.Reset
-        );
-      });
+      if (item.app_id == CSGO_APP_ID) {
+        dbOnPriceChanged(db, item, doc => {
+          console.log(colors.FgYellow, "Price Changed!", colors.Reset);
+          console.log(colors.Dim, JSON.stringify(doc), colors.Reset);
+          console.log(
+            colors.Bright,
+            `${item.market_hash_name}\nPrice Change: ${doc.delta}`,
+            colors.Reset
+          );
+        });
+      }
     });
 
     socket.on(channel.extra_info, (item: InventoryChangesObject) => {
-      dbOnExtraInfo(db, item, doc => {
-        console.log(colors.FgBlue, "Extra Info Received!", colors.Reset);
-        console.log(colors.Dim, JSON.stringify(doc), colors.Reset);
-        // JSON Pretty printing: https://stackoverflow.com/questions/4810841/how-can-i-pretty-print-json-using-javascript
-        console.log(
-          colors.Bright,
-          `Extra Info: ${JSON.stringify(doc.extra_info, null, 2)}\n
-           StickerInfo: ${JSON.stringify(doc.sticker_info, null, 2)}`,
-          colors.Reset
-        );
-      });
+      if (item.app_id == CSGO_APP_ID) {
+        dbOnExtraInfo(db, item, doc => {
+          console.log(colors.FgBlue, "Extra Info Received!", colors.Reset);
+          console.log(colors.Dim, JSON.stringify(doc), colors.Reset);
+          // JSON Pretty printing: https://stackoverflow.com/questions/4810841/how-can-i-pretty-print-json-using-javascript
+          console.log(
+            colors.Bright,
+            `Extra Info: ${JSON.stringify(doc.extra_info, null, 2)}\n
+             StickerInfo: ${JSON.stringify(doc.sticker_info, null, 2)}`,
+            colors.Reset
+          );
+        });
+      }
     });
 
     socket.on(channel.disconnected, () => {
