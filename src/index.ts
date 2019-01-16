@@ -2,7 +2,7 @@ require("dotenv").config(); // Should be first line application; loads environme
 import * as BitSkins from "bitskins";
 import { InventoryChangesObject } from "inventory_changes";
 import { ConsoleColors } from "./console_colors"; // Needs a relative import; I'm not sure why.
-import { Db } from "mongodb";
+import { Db, Double } from "mongodb";
 import {blacklistedSkins} from "blacklist";
 
 // ---- Configuration ----
@@ -67,7 +67,7 @@ MongoClient.connect(
       }
     });
 
-    socket.on(channel.delisted, (item: InventoryChangesObject) => {
+    /* socket.on(channel.delisted, (item: InventoryChangesObject) => {
       if (item.app_id == CSGO_APP_ID) {
         dbOnDelisted(db, item, doc => {
           console.log(colors.FgRed, "Item Delisted or Sold!", colors.Reset);
@@ -114,7 +114,7 @@ MongoClient.connect(
           );
         });
       }
-    });
+    }); */
 
     socket.on(channel.disconnected, () => {
       client.close();
@@ -126,8 +126,30 @@ MongoClient.connect(
 // ---- DB Hooks ------------------
 // --------------------------------
 
-function dbOnListed(db: Db, item: InventoryChangesObject, callback) {
+/**
+ * 
+ * @param avg The old average
+ * @param volume the new volume (old volume + 1)
+ * @param addOn the value of the new item
+ */
+function averageOf(avg: number, volume: number, addOn: number) {
+  volume = (volume > 1) ? volume : 2;
+  let aggregate = avg * (volume - 1)
+  // console.log(`init agg: ${aggregate}`)
+  aggregate = parseFloat(`${aggregate}`) + parseFloat(`${addOn}`)
+  let newAvg = aggregate / volume
+
+  // if (isNaN(newAvg)) {
+  //   console.log(`agg: ${aggregate}\nvol: ${volume}\nadd-on: ${addOn}\nnew-avg: ${newAvg}`)
+  //   process.exit(0)
+  // }
+
+  return newAvg
+}
+
+async function dbOnListed(db: Db, item: InventoryChangesObject, callback) {
   const collection = db.collection("listed");
+  const listing_stats = db.collection("listed_stats")
 
   const doc = {
     id: item.item_id,
@@ -137,7 +159,56 @@ function dbOnListed(db: Db, item: InventoryChangesObject, callback) {
     broadcasted_at: item.broadcasted_at
   };
 
-  collection.insert(doc, callback(doc));
+  if (isNaN(doc.price) || isNaN(doc.discount)) {
+    console.log(colors.FgRed, 'PRICE IS NaN', colors.Reset)
+    return;
+  }
+
+  collection.insertOne(doc, callback(doc));
+  var a = await listing_stats.findOne({'name': item.market_hash_name})
+  let stats = {
+    'name': item.market_hash_name,
+    'volume': 1,
+    'avg': {
+      'price': item.price,
+      'discount': item.discount
+    }
+  }
+  
+  if (a) {
+    console.log(`existing volume ${a['volume']}`)
+    let vol = a['volume'] + 1
+    stats['volume'] = vol
+    console.log(`end volume: ${stats['volume']}`)
+
+    stats['avg']['price'] = averageOf(a['avg']['price'], vol, item.price)
+    stats['avg']['discount'] = averageOf(a['avg']['discount'], vol, item.discount)
+
+    console.log(colors.Dim, `Stats: ${stats}`, colors.Reset)
+
+    if (isNaN(stats.avg.price) || isNaN(stats.avg.discount)) {
+      console.log(colors.FgRed, 'Stats PRICE IS NaN', colors.Reset)
+      return;
+    }
+
+    await listing_stats.updateOne(
+      {'name': item.market_hash_name}, // Filter
+      {$set: {
+        volume: stats.volume,
+        avg: {
+          price: stats.avg.price,
+          discount: stats.avg.discount
+        }
+      }}, // Update data
+      function (){} // Callback
+    )
+
+  } else {
+    console.log(`New Hash Name!`)
+    listing_stats.insertOne(stats)
+  }
+
+  
 }
 
 function dbOnDelisted(db: Db, item: InventoryChangesObject, callback) {
