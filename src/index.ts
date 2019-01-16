@@ -3,6 +3,7 @@ import * as BitSkins from "bitskins";
 import { InventoryChangesObject } from "inventory_changes";
 import { ConsoleColors } from "./console_colors"; // Needs a relative import; I'm not sure why.
 import { Db } from "mongodb";
+import {blacklistedSkins} from "blacklist";
 
 // ---- Configuration ----
 
@@ -121,7 +122,9 @@ MongoClient.connect(
   }
 );
 
-// ---- DB Hooks ----
+// --------------------------------
+// ---- DB Hooks ------------------
+// --------------------------------
 
 function dbOnListed(db: Db, item: InventoryChangesObject, callback) {
   const collection = db.collection("listed");
