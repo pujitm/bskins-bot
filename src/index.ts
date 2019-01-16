@@ -1,7 +1,7 @@
 require("dotenv").config(); // Should be first line application; loads environment variables
 import * as BitSkins from "bitskins";
 import { InventoryChangesObject } from "inventory_changes";
-import { ConsoleColors } from "./console_colors"; // Needs a relative import; I'm not sure why.
+import { ConsoleColors } from "./console_colors"; // Needs currentDoc relative import; I'm not sure why.
 import { Db, Double } from "mongodb";
 import {blacklistedSkins} from "blacklist";
 
@@ -67,7 +67,7 @@ MongoClient.connect(
       }
     });
 
-    /* socket.on(channel.delisted, (item: InventoryChangesObject) => {
+    socket.on(channel.delisted, (item: InventoryChangesObject) => {
       if (item.app_id == CSGO_APP_ID) {
         dbOnDelisted(db, item, doc => {
           console.log(colors.FgRed, "Item Delisted or Sold!", colors.Reset);
@@ -114,7 +114,7 @@ MongoClient.connect(
           );
         });
       }
-    }); */
+    });
 
     socket.on(channel.disconnected, () => {
       client.close();
@@ -159,13 +159,13 @@ async function dbOnListed(db: Db, item: InventoryChangesObject, callback) {
     broadcasted_at: item.broadcasted_at
   };
 
-  if (isNaN(doc.price) || isNaN(doc.discount)) {
-    console.log(colors.FgRed, 'PRICE IS NaN', colors.Reset)
-    return;
-  }
+  // if (isNaN(doc.price) || isNaN(doc.discount)) {
+  //   console.log(colors.FgRed, 'PRICE IS NaN', colors.Reset)
+  //   return;
+  // }
 
   collection.insertOne(doc, callback(doc));
-  var a = await listing_stats.findOne({'name': item.market_hash_name})
+  var currentDoc = await listing_stats.findOne({'name': item.market_hash_name})
   let stats = {
     'name': item.market_hash_name,
     'volume': 1,
@@ -175,21 +175,23 @@ async function dbOnListed(db: Db, item: InventoryChangesObject, callback) {
     }
   }
   
-  if (a) {
-    console.log(`existing volume ${a['volume']}`)
-    let vol = a['volume'] + 1
+  if (currentDoc) {
+    // console.log(`existing volume ${currentDoc['volume']}`)
+    let vol = currentDoc['volume'] + 1
     stats['volume'] = vol
-    console.log(`end volume: ${stats['volume']}`)
+    console.log(`new volume: ${stats['volume']}`)
 
-    stats['avg']['price'] = averageOf(a['avg']['price'], vol, item.price)
-    stats['avg']['discount'] = averageOf(a['avg']['discount'], vol, item.discount)
+    stats['avg']['price'] = averageOf(currentDoc['avg']['price'], vol, item.price)
+    stats['avg']['discount'] = averageOf(currentDoc['avg']['discount'], vol, item.discount)
 
-    console.log(colors.Dim, `Stats: ${stats}`, colors.Reset)
+    console.log(colors.Dim,
+      `Stats: {volume: ${stats.volume}, avg_price: ${stats.avg.price}, avg_discount: ${stats.avg.discount}}`, 
+      colors.Reset)
 
-    if (isNaN(stats.avg.price) || isNaN(stats.avg.discount)) {
-      console.log(colors.FgRed, 'Stats PRICE IS NaN', colors.Reset)
-      return;
-    }
+    // if (isNaN(stats.avg.price) || isNaN(stats.avg.discount)) {
+    //   console.log(colors.FgRed, 'Stats PRICE IS NaN', colors.Reset)
+    //   return;
+    // }
 
     await listing_stats.updateOne(
       {'name': item.market_hash_name}, // Filter
