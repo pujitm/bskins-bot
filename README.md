@@ -23,7 +23,7 @@ Finally, run `npm run start` (or `docker-compose up --build`) and see terminal o
 
 + [MongoDB](https://docs.mongodb.com/manual/tutorial/install-mongodb-on-ubuntu/) (Ubuntu Installation is linked. Run `install-mongodb.sh` in `sudo bash`)
 
-+ Docker (Optional -- See Docker-Windows.md for further instruction)
++ Docker (Optional -- See Docker-Windows.md for further instruction). Change `USING_DOCKER` in `.env` to `1`.
 
 
 ## Program Entry
