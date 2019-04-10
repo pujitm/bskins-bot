@@ -24,7 +24,16 @@ const colors = new ConsoleColors();
 
 const MongoClient = require("mongodb").MongoClient;
 
-const url = process.env.DB_HOST;
+const usingDockerFlag = process.env.USING_DOCKER;
+
+let url;
+
+if (usingDockerFlag) {
+  url = process.env.DB_HOST;
+} else {
+  url = process.env.LOCAL_DB_HOST;
+}
+
 const connectionOptions = { useNewUrlParser: true };
 const dbName = process.env.DB_NAME;
 
@@ -45,6 +54,14 @@ MongoClient.connect(
   url,
   connectionOptions,
   function(err, client) {
+
+    if (err) {
+      console.log(err);
+      console.log('Exiting ...');
+      return;
+      
+    }
+
     console.log("Connected successfully to database server");
 
     const db = client.db(dbName);

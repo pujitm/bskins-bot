@@ -17,16 +17,20 @@ In a separate terminal, run `start-mongod.sh`.
 
 Then, run `npm run test` to make sure everything is configured correctly.
 
-Finally, run `npm run start` and see terminal output.
+Finally, run `npm run start` (or `docker-compose up --build`) and see terminal output.
 
 ## Prerequisites
 
 + [MongoDB](https://docs.mongodb.com/manual/tutorial/install-mongodb-on-ubuntu/) (Ubuntu Installation is linked. Run `install-mongodb.sh` in `sudo bash`)
 
++ Docker (Optional -- See Docker-Windows.md for further instruction)
+
 
 ## Program Entry
 
 Entry is in `src/index.ts`, which can also be found in `package.json`, specifically under the `start` script.
+
+Or, you can run `docker-compose up --build`
 
 ## Tests
 
