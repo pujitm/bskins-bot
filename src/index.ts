@@ -3,7 +3,9 @@ import * as BitSkins from "bitskins";
 import { InventoryChangesObject } from "inventory_changes";
 import { ConsoleColors } from "./console_colors"; // Needs currentDoc relative import; I'm not sure why.
 import { Db, Double } from "mongodb";
-import {blacklistedSkins} from "blacklist";
+import { blacklistedSkins } from "blacklist";
+import { dbOnDelisted, dbOnListed, dbOnPriceChanged, dbOnExtraInfo } from "./mongo";
+import { averageOf } from "custom_math";
 
 // ---- Configuration ----
 
@@ -53,13 +55,13 @@ const CSGO_APP_ID = 730
 MongoClient.connect(
   url,
   connectionOptions,
-  function(err, client) {
+  function (err, client) {
 
     if (err) {
       console.log(err);
       console.log('Exiting ...');
       return;
-      
+
     }
 
     console.log("Connected successfully to database server");
@@ -138,139 +140,3 @@ MongoClient.connect(
     });
   }
 );
-
-// --------------------------------
-// ---- DB Hooks ------------------
-// --------------------------------
-
-/**
- * 
- * @param avg The old average
- * @param volume the new volume (old volume + 1)
- * @param addOn the value of the new item
- */
-function averageOf(avg: number, volume: number, addOn: number) {
-  volume = (volume > 1) ? volume : 2;
-  let aggregate = avg * (volume - 1)
-  // console.log(`init agg: ${aggregate}`)
-  aggregate = parseFloat(`${aggregate}`) + parseFloat(`${addOn}`)
-  let newAvg = aggregate / volume
-
-  // if (isNaN(newAvg)) {
-  //   console.log(`agg: ${aggregate}\nvol: ${volume}\nadd-on: ${addOn}\nnew-avg: ${newAvg}`)
-  //   process.exit(0)
-  // }
-
-  return newAvg
-}
-
-async function dbOnListed(db: Db, item: InventoryChangesObject, callback) {
-  const collection = db.collection("listed");
-  const listing_stats = db.collection("listed_stats")
-
-  const doc = {
-    id: item.item_id,
-    hash_name: item.market_hash_name,
-    price: item.price,
-    discount: item.discount,
-    broadcasted_at: item.broadcasted_at
-  };
-
-  // if (isNaN(doc.price) || isNaN(doc.discount)) {
-  //   console.log(colors.FgRed, 'PRICE IS NaN', colors.Reset)
-  //   return;
-  // }
-
-  collection.insertOne(doc, callback(doc));
-  var currentDoc = await listing_stats.findOne({'name': item.market_hash_name})
-  let stats = {
-    'name': item.market_hash_name,
-    'volume': 1,
-    'avg': {
-      'price': item.price,
-      'discount': item.discount
-    }
-  }
-  
-  if (currentDoc) {
-    // console.log(`existing volume ${currentDoc['volume']}`)
-    let vol = currentDoc['volume'] + 1
-    stats['volume'] = vol
-    console.log(`new volume: ${stats['volume']}`)
-
-    stats['avg']['price'] = averageOf(currentDoc['avg']['price'], vol, item.price)
-    stats['avg']['discount'] = averageOf(currentDoc['avg']['discount'], vol, item.discount)
-
-    console.log(colors.Dim,
-      `Stats: {volume: ${stats.volume}, avg_price: ${stats.avg.price}, avg_discount: ${stats.avg.discount}}`, 
-      colors.Reset)
-
-    // if (isNaN(stats.avg.price) || isNaN(stats.avg.discount)) {
-    //   console.log(colors.FgRed, 'Stats PRICE IS NaN', colors.Reset)
-    //   return;
-    // }
-
-    await listing_stats.updateOne(
-      {'name': item.market_hash_name}, // Filter
-      {$set: {
-        volume: stats.volume,
-        avg: {
-          price: stats.avg.price,
-          discount: stats.avg.discount
-        }
-      }}, // Update data
-      function (){} // Callback
-    )
-
-  } else {
-    console.log(`New Hash Name!`)
-    listing_stats.insertOne(stats)
-  }
-
-  
-}
-
-function dbOnDelisted(db: Db, item: InventoryChangesObject, callback) {
-  const collection = db.collection("delisted");
-
-  const doc = {
-    id: item.item_id,
-    hash_name: item.market_hash_name,
-    price: item.price,
-    broadcasted_at: item.broadcasted_at
-  };
-
-  collection.insert(doc, callback(doc));
-}
-
-function dbOnPriceChanged(db: Db, item: InventoryChangesObject, callback) {
-  const collection = db.collection("price_changed");
-
-  const delta = (item.old_price - item.price).toFixed(2);
-
-  const doc = {
-    id: item.item_id,
-    hash_name: item.market_hash_name,
-    old_price: item.old_price,
-    price: item.price,
-    delta: delta,
-    broadcasted_at: item.broadcasted_at
-  };
-
-  collection.insert(doc, callback(doc));
-}
-
-function dbOnExtraInfo(db: Db, item: InventoryChangesObject, callback) {
-  const collection = db.collection("extra_info");
-
-  const doc = {
-    item_id: item.item_id,
-    asset_id: item.asset_id,
-    extra_info: item.extra_info,
-    sticker_info: item.sticker_info
-  };
-
-  collection.insert(doc, callback(doc));
-}
-
-// ---- End DB Hooks ----

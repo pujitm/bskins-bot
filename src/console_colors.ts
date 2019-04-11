@@ -28,3 +28,5 @@ export class ConsoleColors {
     BgCyan = "\x1b[46m"
     BgWhite = "\x1b[47m"
 }
+
+export const colors = new ConsoleColors();
