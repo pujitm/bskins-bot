@@ -2,6 +2,7 @@ require("dotenv").config();
 import { expect } from "chai";
 import "mocha";
 import { Db } from "mongodb";
+import { averageOf } from "../custom_math";
 const MongoClient = require("mongodb").MongoClient;
 const assert = require("assert");
 
@@ -103,16 +104,3 @@ describe("mongo-connection", function() {
     expect(averageOf(oldAvg, newVol, newPrice)).to.be.equal(expectedAvg);
   });
 });
-
-/**
- *
- * @param avg The old average
- * @param volume the new volume (old volume + 1)
- * @param addOn the value of the new item
- */
-function averageOf(avg: number, volume: number, addOn: number) {
-  let aggregate = avg * (volume - 1);
-  aggregate += addOn;
-  let newAvg = aggregate / volume;
-  return newAvg;
-}
