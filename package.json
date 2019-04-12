@@ -26,6 +26,7 @@
     "bitskins": "^1.0.0",
     "dotenv": "^6.2.0",
     "express": "^4.16.4",
+    "express-ws": "^4.0.0",
     "mongodb": "^3.1.10"
   }
 }
