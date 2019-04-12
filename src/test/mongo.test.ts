@@ -2,7 +2,7 @@ require("dotenv").config();
 import { expect } from "chai";
 import "mocha";
 import { Db } from "mongodb";
-import { averageOf } from "../custom_math";
+import { averageOf } from "../util/custom_math";
 const MongoClient = require("mongodb").MongoClient;
 const assert = require("assert");
 

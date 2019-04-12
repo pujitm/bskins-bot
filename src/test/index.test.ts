@@ -1,6 +1,6 @@
 require('dotenv').config()
 
-import { hello } from '../hello-test';
+// import { hello } from '../hello-test';
 import { expect } from 'chai';
 import * as BitSkins from "bitskins"
 import 'mocha';
@@ -8,7 +8,7 @@ import 'mocha';
 describe('Hello function', () => {
 
   it('test is alive', () => {
-    const result = hello();
+      const result = 'Hello World!';
     expect(result).to.equal('Hello World!');
   });
 

@@ -1,7 +1,7 @@
 import { Db } from "mongodb";
-import { InventoryChangesObject } from "inventory_changes";
-import { colors } from "./console_colors";
-import { averageOf } from "./custom_math";
+import { InventoryChangesObject } from "./inventory_changes";
+import { colors } from "../util/console_colors";
+import { averageOf } from "../util/custom_math";
 
 // Example of Mongo Usage
 
@@ -109,7 +109,7 @@ export function dbOnPriceChanged(db: Db, item: InventoryChangesObject, callback)
 }
 
 export async function dbOnListed(db: Db, item: InventoryChangesObject, callback) {
-  const collection = db.collection("listed");
+    const collection = db.collection("listed");
   const listing_stats = db.collection("listed_stats")
 
   const doc = {

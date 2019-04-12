@@ -1,11 +1,12 @@
 require("dotenv").config(); // Should be first line application; loads environment variables
 import * as BitSkins from "bitskins";
-import { InventoryChangesObject } from "inventory_changes";
-import { ConsoleColors } from "./console_colors"; // Needs currentDoc relative import; I'm not sure why.
+import { InventoryChangesObject } from "./data/inventory_changes";
+import { colors } from "./util/console_colors"; // Needs currentDoc relative import; I'm not sure why.
 import { Db, Double } from "mongodb";
-import { blacklistedSkins } from "blacklist";
-import { dbOnDelisted, dbOnListed, dbOnPriceChanged, dbOnExtraInfo } from "./mongo";
-import { averageOf } from "custom_math";
+import { blacklistedSkins } from "constants/blacklist";
+import { dbOnDelisted, dbOnListed, dbOnPriceChanged, dbOnExtraInfo } from "./data/mongo";
+import { averageOf } from "util/custom_math";
+import { initializeApi } from "./api/app";
 
 // ---- Configuration ----
 
@@ -18,11 +19,6 @@ const api = new BitSkins.API(process.env.API_KEY, process.env.API_SECRET);
  * See https://github.com/Rob--/bitskins#web-sockets for documentation
  */
 const socket = new BitSkins.WebSocket();
-
-/**
- * See `ConsoleColors` import for documentation
- */
-const colors = new ConsoleColors();
 
 const MongoClient = require("mongodb").MongoClient;
 
@@ -61,7 +57,6 @@ MongoClient.connect(
       console.log(err);
       console.log('Exiting ...');
       return;
-
     }
 
     console.log("Connected successfully to database server");
@@ -138,5 +133,7 @@ MongoClient.connect(
     socket.on(channel.disconnected, () => {
       client.close();
     });
+
+    initializeApi(db);
   }
 );
