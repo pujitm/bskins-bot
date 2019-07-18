@@ -25,6 +25,8 @@ Finally, run `npm run start` (or `docker-compose up --build`) and see terminal o
 
 + Docker (Optional -- See Docker-Windows.md for further instruction). Change `USING_DOCKER` in `.env` to `1`.
 
++ Git Secret (run `git secret reveal` to decrypt secrets)
+
 
 ## Program Entry
 
