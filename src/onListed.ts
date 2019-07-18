@@ -1,6 +1,8 @@
+import { bsApi } from './index';
+
 export async function onListed(item: any) {
     if (goodBuy(item)) {
-        let bought:boolean = await buy(item);
+        let bought: boolean = await buy(item);
         logPurchase(item, bought); // don't await, let this happen in background
         if (bought) {
             list(item);
@@ -15,7 +17,8 @@ export async function onListed(item: any) {
  */
 async function buy(item: any): Promise<boolean> {
     // TODO implement
-    return false;
+    let code = bsApi.buyItem([item.id], [item.price]);
+    return (code - 300) < 0; // 200 statuses are ok, 300 and up are bad
 }
 
 /**

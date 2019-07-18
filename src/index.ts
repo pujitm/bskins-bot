@@ -13,16 +13,16 @@ import { initializeApi } from "./api/app";
 /**
  * See https://github.com/Rob--/bitskins#api for documentation
  */
-const bsApi = new BitSkins.API(process.env.API_KEY, process.env.API_SECRET);
+export const bsApi = new BitSkins.API(process.env.API_KEY, process.env.API_SECRET);
 
 /**
  * See https://github.com/Rob--/bitskins#web-sockets for documentation
  */
-const bsSocket = new BitSkins.WebSocket();
+export const bsSocket = new BitSkins.WebSocket();
 
-const MongoClient = require("mongodb").MongoClient;
+export const MongoClient = require("mongodb").MongoClient;
 
-const usingDockerFlag = process.env.USING_DOCKER;
+export const usingDockerFlag = process.env.USING_DOCKER;
 
 let url;
 
