@@ -7,6 +7,7 @@ import { blacklistedSkins } from "constants/blacklist";
 import { dbOnDelisted, dbOnListed, dbOnPriceChanged, dbOnExtraInfo } from "./data/mongo";
 import { averageOf } from "util/custom_math";
 import { initializeApi } from "./api/app";
+import { onListed } from "onListed";
 
 // ---- Configuration ----
 
@@ -67,19 +68,16 @@ MongoClient.connect(
       console.log("connected to bitskins websocket");
     });
 
-    //socket.on(channel.listed, (item: InventoryChangesObject) => {
-    //  if (item.app_id == CSGO_APP_ID) {
-    //    dbOnListed(db, item, doc => {
-    //      console.log(colors.FgGreen, "Item Listed!", colors.Reset);
-    //      console.log(colors.Dim, JSON.stringify(doc), colors.Reset);
-    //      console.log(
-    //        colors.Bright,
-    //        `${item.market_hash_name}\n$ ${item.price}`,
-    //        colors.Reset
-    //      );
-    //    });
-    //  }
-    //});
+    bsSocket.on(channel.listed, (item: InventoryChangesObject) => {
+      // PRECONDITION: item.app_id == CSGO_APP_ID
+      onListed(item);
+    });
+
+    // Treat price changes as new listings
+    bsSocket.on(channel.price_changed, (item: InventoryChangesObject) => {
+      // PRECONDITION: item.app_id == CSGO_APP_ID
+      onListed(item);
+     });
 
     //socket.on(channel.delisted, (item: InventoryChangesObject) => {
     //  if (item.app_id == CSGO_APP_ID) {
@@ -100,19 +98,7 @@ MongoClient.connect(
     //  const broadcastTime = item.broadcasted_at;
     //});
 
-    //socket.on(channel.price_changed, (item: InventoryChangesObject) => {
-    //  if (item.app_id == CSGO_APP_ID) {
-    //    dbOnPriceChanged(db, item, doc => {
-    //      console.log(colors.FgYellow, "Price Changed!", colors.Reset);
-    //      console.log(colors.Dim, JSON.stringify(doc), colors.Reset);
-    //      console.log(
-    //        colors.Bright,
-    //        `${item.market_hash_name}\nPrice Change: ${doc.delta}`,
-    //        colors.Reset
-    //      );
-    //    });
-    //  }
-    //});
+    
 
     //socket.on(channel.extra_info, (item: InventoryChangesObject) => {
     //  if (item.app_id == CSGO_APP_ID) {
