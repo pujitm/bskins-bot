@@ -18,7 +18,7 @@ const api = new BitSkins.API(process.env.API_KEY, process.env.API_SECRET);
 /**
  * See https://github.com/Rob--/bitskins#web-sockets for documentation
  */
-const socket = new BitSkins.WebSocket();
+const bsSocket = new BitSkins.WebSocket();
 
 const MongoClient = require("mongodb").MongoClient;
 
@@ -63,7 +63,7 @@ MongoClient.connect(
 
     const db = client.db(dbName);
 
-    socket.on(channel.connected, () => {
+    bsSocket.on(channel.connected, () => {
       console.log("connected to bitskins websocket");
     });
 
@@ -130,7 +130,7 @@ MongoClient.connect(
     //  }
     //});
 
-    socket.on(channel.disconnected, () => {
+    bsSocket.on(channel.disconnected, () => {
       client.close();
     });
 
