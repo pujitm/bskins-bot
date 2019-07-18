@@ -1,4 +1,6 @@
 import { bsApi } from './index';
+import skinValues from './constants/initSkinValues';
+import { InventoryChangesObject } from 'data/inventory_changes';
 
 export async function onListed(item: any) {
     if (goodBuy(item)) {
@@ -11,13 +13,24 @@ export async function onListed(item: any) {
 }
 
 /**
+ * Returns a boolean indicating whether this item
+ * is a 'good buy'
+ * @param item 
+ */
+function goodBuy(item: InventoryChangesObject): boolean {
+    let expectedValue = skinValues[item.item_id];
+    if (!expectedValue) return false;
+    return item.price < expectedValue;
+}
+
+/**
  * Attempts to purchase the item
  * Returns a boolean indicating whether purchase was successful
  * @param item item to purchase
  */
-async function buy(item: any): Promise<boolean> {
+async function buy(item: InventoryChangesObject): Promise<boolean> {
     // TODO implement
-    let code = bsApi.buyItem([item.id], [item.price]);
+    let code = await bsApi.buyItem([item.item_id], [item.price]);
     return (code - 300) < 0; // 200 statuses are ok, 300 and up are bad
 }
 
@@ -35,14 +48,6 @@ async function logPurchase(item, success) {
  */
 function list(item: any) {
     // TODO implement
-}
-
-/**
- * Returns a boolean indicating whether this item
- * is a 'good buy'
- * @param item 
- */
-function goodBuy(item): boolean {
-    // TODO implement
-    return false;
+    // let code = bsApi.sellItem([item.id], [item.price]);
+    // return (code - 300) < 0; 
 }

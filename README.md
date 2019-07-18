@@ -46,15 +46,17 @@ To run tests, run `npm run test`
 
 ## Algorithm
 
-See `bot.ts`
-
 1. Skin is listed on bitskins. The listed event is fired and a signal is sent to us.
+
+[Purchase Logic in `onListed.ts`]
 
 2. Our program (the script) makes a decision if this event shows a good purchase and buys it. The decision will be based off of several factors, detailed below.
 
 3. We either send or don’t send the API command to buy the item listed in the event fired in step 1. 
 
 4. We get a confirmation on if the item was sold to us, or has been sold to someone else. 
+
+[End Purchase Logic]
 
 5. If the item was not sold to us, log it, and then return to step 1.
 
