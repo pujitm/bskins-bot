@@ -64,7 +64,11 @@ See `bot.ts`
 
 8. Wait until the item sells.
 
+[Cron Job]
+
 9. If the item does not sell within a certain time (this time will be detailed), then lower the price by x%. This is detailed below
+
+[End Cron Job]
 
 10. Use new funds to buy skins: Rinse and repeat
 
