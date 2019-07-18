@@ -13,7 +13,7 @@ import { initializeApi } from "./api/app";
 /**
  * See https://github.com/Rob--/bitskins#api for documentation
  */
-const api = new BitSkins.API(process.env.API_KEY, process.env.API_SECRET);
+const bsApi = new BitSkins.API(process.env.API_KEY, process.env.API_SECRET);
 
 /**
  * See https://github.com/Rob--/bitskins#web-sockets for documentation
