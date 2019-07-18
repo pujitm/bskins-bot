@@ -1,5 +1,9 @@
 # Bitskins Bot
 
+## TODO
+
+- Add skin values to `src/constants/initSkinValues.ts`
+
 ## Getting Started
 
 See `Prerequisites`.
