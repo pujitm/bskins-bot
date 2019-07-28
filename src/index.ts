@@ -8,6 +8,7 @@ import { dbOnDelisted, dbOnListed, dbOnPriceChanged, dbOnExtraInfo } from "./dat
 import { averageOf } from "util/custom_math";
 import { initializeApi } from "./api/app";
 import { onListed } from "onListed";
+const {Firestore} = require('@google-cloud/firestore');
 
 // ---- Configuration ----
 
@@ -47,79 +48,41 @@ const channel = {
 
 const CSGO_APP_ID = 730
 
-// ---- End Configuration ----
+// Create a new client
+const firestore = new Firestore();
 
-MongoClient.connect(
-  url,
-  connectionOptions,
-  function (err, client) {
+bsSocket.on(channel.connected, () => {
+  console.log("connected to bitskins websocket");
+});
 
-    if (err) {
-      console.log(err);
-      console.log('Exiting ...');
-      return;
+bsSocket.on(channel.listed, (item: InventoryChangesObject) => {
+  // PRECONDITION: item.app_id == CSGO_APP_ID
+  let docRef = firestore.doc(`${item.market_hash_name}/${item.item_id}`);
+  docRef.set({listing: item}).then().catch(err => {
+    console.log(colors.FgRed, err, colors.Reset);
+  }); // async operation
+});
+
+// Treat price changes as new listings
+bsSocket.on(channel.price_changed, (item: InventoryChangesObject) => {
+  // PRECONDITION: item.app_id == CSGO_APP_ID
+  let docRef = firestore.doc(`${item.market_hash_name}/${item.item_id}`);
+  docRef.update({listing: item}).then().catch(err => {
+    if (!err.details.includes('No document to update')) {
+      console.log(colors.FgRed, err, colors.Reset);
     }
+  }); // async operation
+  // onListed(item);
+ });
 
-    console.log("Connected successfully to database server");
+ bsSocket.on(channel.delisted, (item: InventoryChangesObject) => {
+  // PRECONDITION: item.app_id == CSGO_APP_ID
+  let docRef = firestore.doc(`${item.market_hash_name}/${item.item_id}`);
+  docRef.update({delist: item}).then().catch(err => {
+    if (!err.details.includes('No document to update')) {
+      console.log(colors.FgRed, err, colors.Reset);
+    }
+  }); // async operation
+ });
 
-    const db = client.db(dbName);
-
-    bsSocket.on(channel.connected, () => {
-      console.log("connected to bitskins websocket");
-    });
-
-    bsSocket.on(channel.listed, (item: InventoryChangesObject) => {
-      // PRECONDITION: item.app_id == CSGO_APP_ID
-      onListed(item);
-    });
-
-    // Treat price changes as new listings
-    bsSocket.on(channel.price_changed, (item: InventoryChangesObject) => {
-      // PRECONDITION: item.app_id == CSGO_APP_ID
-      onListed(item);
-     });
-
-    //socket.on(channel.delisted, (item: InventoryChangesObject) => {
-    //  if (item.app_id == CSGO_APP_ID) {
-    //    dbOnDelisted(db, item, doc => {
-    //      console.log(colors.FgRed, "Item Delisted or Sold!", colors.Reset);
-    //      console.log(colors.Dim, JSON.stringify(doc), colors.Reset);
-    //      console.log(
-    //        colors.Bright,
-    //        `${item.market_hash_name}\n$ ${item.price}`,
-    //        colors.Reset
-    //      );
-    //    });
-    //  }
-
-    //  const id = item.item_id;
-    //  const name = item.market_hash_name;
-    //  const price = item.price;
-    //  const broadcastTime = item.broadcasted_at;
-    //});
-
-    
-
-    //socket.on(channel.extra_info, (item: InventoryChangesObject) => {
-    //  if (item.app_id == CSGO_APP_ID) {
-    //    dbOnExtraInfo(db, item, doc => {
-    //      console.log(colors.FgBlue, "Extra Info Received!", colors.Reset);
-    //      console.log(colors.Dim, JSON.stringify(doc), colors.Reset);
-    //      // JSON Pretty printing: https://stackoverflow.com/questions/4810841/how-can-i-pretty-print-json-using-javascript
-    //      console.log(
-    //        colors.Bright,
-    //        `Extra Info: ${JSON.stringify(doc.extra_info, null, 2)}\n
-    //         StickerInfo: ${JSON.stringify(doc.sticker_info, null, 2)}`,
-    //        colors.Reset
-    //      );
-    //    });
-    //  }
-    //});
-
-    bsSocket.on(channel.disconnected, () => {
-      client.close();
-    });
-
-    initializeApi(db);
-  }
-);
+// ---- End Configuration ----
