@@ -464,3 +464,4 @@ MigrationBackup/
 
 .gitsecret/keys/random_seed
 !*.secret
+bitzkproject.json
