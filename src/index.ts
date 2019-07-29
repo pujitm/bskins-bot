@@ -9,6 +9,10 @@ import { averageOf } from "util/custom_math";
 import { initializeApi } from "./api/app";
 import { onListed } from "onListed";
 const { Firestore } = require('@google-cloud/firestore');
+const _cliProgress = require('cli-progress');
+ 
+// create a new progress bar instance and use shades_classic theme
+const progressBar = new _cliProgress.Bar({}, _cliProgress.Presets.shades_classic);
 
 // ---- Configuration ----
 
@@ -54,20 +58,29 @@ const firestore = new Firestore();
 let statCache = {};
 
 const fetchCache = () => firestore.listCollections().then(async (collections) => {
+  console.log('Refreshing Cache from database ...');
+  progressBar.start(collections.length, 0);
   for (let collection of collections) {
     if (collection.id) {
-      const snap = await collection.doc('stats').then(ref => ref.get());
+      const snap = await collection.doc('stats').get();
       const data = snap.data();
       statCache[collection.id] = data;
+      progressBar.increment();
     }
   }
-  console.log(`Updated cache at ${new Date().toUTCString()}`)
+  progressBar.stop();
+  console.log(`Refreshed cache at ${new Date().toUTCString()}`)
 });
 
 function updateCache() {
-  Object.keys(statCache).forEach(key => {
+  console.log(`[${new Date().toUTCString()}]  Updating Remote Cache ...`);
+  let keys = Object.keys(statCache);
+  progressBar.start(keys.length, 0);
+  keys.forEach(key => {
     firestore.doc(`${key}/stats`).set(statCache[key], { merge: true });
+    progressBar.increment();
   });
+  progressBar.stop();
 }
 
 bsSocket.on(channel.connected, async () => {
