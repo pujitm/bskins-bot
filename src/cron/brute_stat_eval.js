@@ -35,8 +35,8 @@ function parseCollection(collection) {
         }
 
         let avgPrices = {
-            avgBuy: average(buyPrices) || 0,
-            avgSell: average(sellPrices) || 0,
+            avgList: average(buyPrices) || 0,
+            avgSale: average(sellPrices) || 0,
             volume: documentRefs.length,
         };
 

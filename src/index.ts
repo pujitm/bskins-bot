@@ -8,7 +8,7 @@ import { dbOnDelisted, dbOnListed, dbOnPriceChanged, dbOnExtraInfo } from "./dat
 import { averageOf } from "util/custom_math";
 import { initializeApi } from "./api/app";
 import { onListed } from "onListed";
-const {Firestore} = require('@google-cloud/firestore');
+const { Firestore } = require('@google-cloud/firestore');
 
 // ---- Configuration ----
 
@@ -51,38 +51,135 @@ const CSGO_APP_ID = 730
 // Create a new client
 const firestore = new Firestore();
 
-bsSocket.on(channel.connected, () => {
+let statCache = {};
+
+const fetchCache = () => firestore.listCollections().then(async (collections) => {
+  for (let collection of collections) {
+    if (collection.id) {
+      const snap = await collection.doc('stats').then(ref => ref.get());
+      const data = snap.data();
+      statCache[collection.id] = data;
+    }
+  }
+  console.log(`Updated cache at ${new Date().toUTCString()}`)
+});
+
+function updateCache() {
+  Object.keys(statCache).forEach(key => {
+    firestore.doc(`${key}/stats`).set(statCache[key], { merge: true });
+  });
+}
+
+bsSocket.on(channel.connected, async () => {
   console.log("connected to bitskins websocket");
+  // Update cache every two hours
+  await fetchCache();
+  const intervalDuration = 1000 * 60 * 60 * 2;
+  let intervalId = setInterval(updateCache, intervalDuration);
 });
 
 bsSocket.on(channel.listed, (item: InventoryChangesObject) => {
   // PRECONDITION: item.app_id == CSGO_APP_ID
   let docRef = firestore.doc(`${item.market_hash_name}/${item.item_id}`);
-  docRef.set({listing: item}).then().catch(err => {
+  docRef.set({ listing: item }).then().catch(err => {
     console.log(colors.FgRed, err, colors.Reset);
   }); // async operation
+  updateCacheOnListing(item);
+
 });
 
 // Treat price changes as new listings
 bsSocket.on(channel.price_changed, (item: InventoryChangesObject) => {
   // PRECONDITION: item.app_id == CSGO_APP_ID
   let docRef = firestore.doc(`${item.market_hash_name}/${item.item_id}`);
-  docRef.update({listing: item}).then().catch(err => {
+  docRef.update({ listing: item }).then().catch(err => {
     if (!err.details.includes('No document to update')) {
       console.log(colors.FgRed, err, colors.Reset);
     }
   }); // async operation
-  // onListed(item);
- });
 
- bsSocket.on(channel.delisted, (item: InventoryChangesObject) => {
+  updateCacheOnPriceChange(item);
+  // onListed(item);
+});
+
+bsSocket.on(channel.delisted, (item: InventoryChangesObject) => {
   // PRECONDITION: item.app_id == CSGO_APP_ID
   let docRef = firestore.doc(`${item.market_hash_name}/${item.item_id}`);
-  docRef.update({delist: item}).then().catch(err => {
+  docRef.update({ delist: item }).then().catch(err => {
     if (!err.details.includes('No document to update')) {
       console.log(colors.FgRed, err, colors.Reset);
     }
   }); // async operation
- });
+  updateCacheOnDelisting(item);
+});
 
 // ---- End Configuration ----
+
+function updateCacheOnListing(item: InventoryChangesObject) {
+  if (statCache[item.market_hash_name]) {
+
+    if (statCache[item.market_hash_name].avgList) {
+      // Update average
+      statCache[item.market_hash_name].avgList =
+        (statCache[item.market_hash_name].avgList + item.price) / 2.0;
+
+      // Increment Volume
+      statCache[item.market_hash_name].volume++;
+      return;
+    }
+
+  }
+
+  // else, init item
+  initListedItemInCache(item);
+}
+
+function updateCacheOnPriceChange(item: InventoryChangesObject) {
+  const priceReduction = item.old_price - item.price;
+  if (statCache[item.market_hash_name]) {
+
+    if (statCache[item.market_hash_name].avgList) {
+      const avgImpact = priceReduction / statCache[item.market_hash_name].volume;
+      // Update average
+      statCache[item.market_hash_name].avgList -= avgImpact;
+      return;
+    }
+
+  }
+
+  // else, init item
+  initListedItemInCache(item);
+}
+
+function initListedItemInCache(item: InventoryChangesObject) {
+  statCache[item.market_hash_name] = {
+    avgList: item.price,
+    volume: 1,
+  };
+}
+
+function initDelistedItemInCache(item: InventoryChangesObject) {
+  statCache[item.market_hash_name] = {
+    avgSale: item.price,
+    volume: 1,
+  };
+}
+
+function updateCacheOnDelisting(item: InventoryChangesObject) {
+  if (statCache[item.market_hash_name]) {
+
+    if (statCache[item.market_hash_name].avgSale) {
+      // Update average
+      statCache[item.market_hash_name].avgSale =
+        (statCache[item.market_hash_name].avgSale + item.price) / 2.0;
+
+      // Increment Volume
+      statCache[item.market_hash_name].volume++;
+      return;
+    }
+
+  }
+
+  // else, init item
+  initDelistedItemInCache(item);
+}
