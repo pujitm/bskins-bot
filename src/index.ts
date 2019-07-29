@@ -108,6 +108,8 @@ bsSocket.on(channel.price_changed, (item: InventoryChangesObject) => {
   docRef.update({ listing: item }).then().catch(err => {
     if (!err.details.includes('No document to update')) {
       console.log(colors.FgRed, err, colors.Reset);
+    } else {
+      docRef.set({listing: item}, {merge: true});
     }
   }); // async operation
 
@@ -121,6 +123,8 @@ bsSocket.on(channel.delisted, (item: InventoryChangesObject) => {
   docRef.update({ delist: item }).then().catch(err => {
     if (!err.details.includes('No document to update')) {
       console.log(colors.FgRed, err, colors.Reset);
+    } else {
+      docRef.set({ delist: item }, {merge: true});
     }
   }); // async operation
   updateCacheOnDelisting(item);
